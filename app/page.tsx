@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
+import emailjs from "@emailjs/browser";
 
 const he = {
   dir: "rtl",
@@ -896,26 +897,42 @@ export default function Home() {
               <p style={{ fontWeight: 700, fontSize: 16, color: txt }}>{t.ok}</p>
             </div>
           ) : (
-            <form onSubmit={e => { e.preventDefault(); setSent(true); }}
+            <form onSubmit={async e => {
+                e.preventDefault();
+                const form = e.currentTarget as HTMLFormElement;
+                const name = (form.elements.namedItem("name") as HTMLInputElement).value;
+                const email = (form.elements.namedItem("email") as HTMLInputElement).value;
+                const phone = (form.elements.namedItem("phone") as HTMLInputElement).value;
+                const message = (form.elements.namedItem("message") as HTMLTextAreaElement).value;
+                try {
+                  await emailjs.send(
+                    "Eitan_ziada23",
+                    "template_guj1f61",
+                    { from_name: name, to_email: email, phone, message },
+                    "O8oemYd-V9748kfNx"
+                  );
+                } catch {}
+                setSent(true);
+              }}
               style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              <input required type="text" placeholder={t.namePh}
+              <input required name="name" type="text" placeholder={t.namePh}
                 style={{ padding: "12px 14px", borderRadius: 8, border: `1px solid ${border}`, background: card,
                   fontSize: 14, outline: "none", color: txt }}
                 onFocus={e => (e.currentTarget.style.borderColor = accent)}
                 onBlur={e => (e.currentTarget.style.borderColor = border)} />
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                <input required type="tel" placeholder={t.phonePh}
+                <input required name="phone" type="tel" placeholder={t.phonePh}
                   style={{ padding: "12px 14px", borderRadius: 8, border: `1px solid ${border}`, background: card,
                     fontSize: 14, outline: "none", color: txt }}
                   onFocus={e => (e.currentTarget.style.borderColor = accent)}
                   onBlur={e => (e.currentTarget.style.borderColor = border)} />
-                <input required type="email" placeholder={t.emailPh}
+                <input required name="email" type="email" placeholder={t.emailPh}
                   style={{ padding: "12px 14px", borderRadius: 8, border: `1px solid ${border}`, background: card,
                     fontSize: 14, outline: "none", color: txt }}
                   onFocus={e => (e.currentTarget.style.borderColor = accent)}
                   onBlur={e => (e.currentTarget.style.borderColor = border)} />
               </div>
-              <textarea required rows={4} placeholder={t.msgPh}
+              <textarea required name="message" rows={4} placeholder={t.msgPh}
                 style={{ padding: "12px 14px", borderRadius: 8, border: `1px solid ${border}`, background: card,
                   fontSize: 14, outline: "none", resize: "none", color: txt }}
                 onFocus={e => (e.currentTarget.style.borderColor = accent)}
