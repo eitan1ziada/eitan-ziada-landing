@@ -15,10 +15,10 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const supabase = getSupabase();
-  const { name, role, text } = await req.json();
+  const { name, role, text, rating } = await req.json();
   if (!name || !text) return NextResponse.json({ error: "Missing fields" }, { status: 400 });
 
-  const { error } = await supabase.from("reviews").insert({ name, role, text, approved: false });
+  const { error } = await supabase.from("reviews").insert({ name, role, text, rating: rating ?? 5, approved: false });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true });
 }

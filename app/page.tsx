@@ -219,7 +219,7 @@ function GridSection({ id, style, children }: { id?: string; style?: React.CSSPr
   );
 }
 
-type DBReview = { id: string; name: string; role: string; text: string };
+type DBReview = { id: string; name: string; role: string; text: string; rating: number };
 
 export default function Home() {
   const [lang, setLang] = useState<"he" | "en">("he");
@@ -232,6 +232,8 @@ export default function Home() {
   const [dbReviews, setDbReviews] = useState<DBReview[]>([]);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewSent, setReviewSent] = useState(false);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewRatingHover, setReviewRatingHover] = useState(0);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const heroMouseRef = useRef({ x: -9999, y: -9999 });
   const animFrameRef = useRef<number>(0);
@@ -907,7 +909,7 @@ export default function Home() {
                     const name = (f.elements.namedItem("rname") as HTMLInputElement).value;
                     const role = (f.elements.namedItem("rrole") as HTMLInputElement).value;
                     const text = (f.elements.namedItem("rtext") as HTMLTextAreaElement).value;
-                    await fetch("/api/reviews", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, role, text }) });
+                    await fetch("/api/reviews", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, role, text, rating: reviewRating }) });
                     setReviewSent(true);
                   }} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                     <input required name="rname" placeholder={lang === "he" ? "שמך" : "Your name"}
@@ -918,6 +920,23 @@ export default function Home() {
                       style={{ padding: "11px 13px", borderRadius: 8, border: `1px solid ${border}`, background: "#060f1e", color: txt, fontSize: 14, outline: "none" }}
                       onFocus={e => (e.currentTarget.style.borderColor = accent)}
                       onBlur={e => (e.currentTarget.style.borderColor = border)} />
+                    {/* Star rating */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <span style={{ fontSize: 13, color: txtMid }}>{lang === "he" ? "דירוג:" : "Rating:"}</span>
+                      <div style={{ display: "flex", gap: 4 }}>
+                        {[1,2,3,4,5].map(star => (
+                          <button key={star} type="button"
+                            onClick={() => setReviewRating(star)}
+                            onMouseEnter={() => setReviewRatingHover(star)}
+                            onMouseLeave={() => setReviewRatingHover(0)}
+                            style={{ background: "none", border: "none", cursor: "pointer", fontSize: 28, lineHeight: 1,
+                              color: star <= (reviewRatingHover || reviewRating) ? "#f59e0b" : "rgba(255,255,255,0.15)",
+                              transition: "color 0.15s, transform 0.1s",
+                              transform: star <= (reviewRatingHover || reviewRating) ? "scale(1.2)" : "scale(1)",
+                            }}>★</button>
+                        ))}
+                      </div>
+                    </div>
                     <textarea required name="rtext" rows={4} placeholder={lang === "he" ? "מה תרצה לשתף?" : "What would you like to share?"}
                       style={{ padding: "11px 13px", borderRadius: 8, border: `1px solid ${border}`, background: "#060f1e", color: txt, fontSize: 14, outline: "none", resize: "none" }}
                       onFocus={e => (e.currentTarget.style.borderColor = accent)}
@@ -941,7 +960,9 @@ export default function Home() {
           <div className="grid-3-col" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, marginTop: 24 }}>
             {(dbReviews.length > 0 ? dbReviews : t.testimonials).map((r, i) => (
               <div key={i} style={{ background: card, borderRadius: 12, padding: 22, border: `1px solid ${border}` }}>
-                <p style={{ color: "#f59e0b", fontSize: 15, marginBottom: 10 }}>★★★★★</p>
+                <p style={{ color: "#f59e0b", fontSize: 15, marginBottom: 10 }}>
+                  {"rating" in r ? "★".repeat((r as DBReview).rating) + "☆".repeat(5 - (r as DBReview).rating) : "★★★★★"}
+                </p>
                 <p style={{ fontSize: 14, color: txtMid, lineHeight: 1.7, marginBottom: 16 }}>"{r.text}"</p>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <div style={{ width: 36, height: 36, borderRadius: "50%", background: accent, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 14 }}>
