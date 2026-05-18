@@ -5,7 +5,7 @@ const SESSION_KEY = "admin_session";
 const SESSION_TTL = 15 * 60 * 1000; // 15 minutes
 
 type Review  = { id: string; name: string; role: string; text: string; rating: number; approved: boolean; created_at: string };
-type Contact = { id: string; name: string; email: string; phone: string; message: string; created_at: string };
+type Contact = { id: string; name: string; email: string; phone: string; message: string; created_at: string; status: string };
 
 const bg    = "#020917";
 const card  = "#0d1b2e";
@@ -65,6 +65,20 @@ export default function AdminPage() {
       setError("סיסמה שגויה");
     }
     setLoading(false);
+  };
+
+  const updateContact = async (id: string, status: string) => {
+    await fetch(`/api/contacts/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", "x-admin-password": password },
+      body: JSON.stringify({ status }),
+    });
+    setContacts(c => c.map(x => x.id === id ? { ...x, status } : x));
+  };
+
+  const deleteContact = async (id: string) => {
+    await fetch(`/api/contacts/${id}`, { method: "DELETE", headers: { "x-admin-password": password } });
+    setContacts(c => c.filter(x => x.id !== id));
   };
 
   const approveReview = async (id: string, approved: boolean) => {
@@ -145,8 +159,15 @@ export default function AdminPage() {
               ? <Empty text="אין פניות עדיין" />
               : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  {contacts.map(c => (
-                    <div key={c.id} style={{ background: card, border: `1px solid ${border}`, borderRadius: 14, padding: "20px 24px" }}>
+                  {contacts.map(c => {
+                    const statusStyle: Record<string, { bg: string; border: string; color: string; label: string }> = {
+                      new:        { bg: "rgba(59,130,246,0.1)",  border: "rgba(59,130,246,0.3)",  color: "#60a5fa", label: "חדש" },
+                      in_progress:{ bg: "rgba(245,158,11,0.1)",  border: "rgba(245,158,11,0.3)",  color: "#f59e0b", label: "בטיפול" },
+                      handled:    { bg: "rgba(74,222,128,0.1)",  border: "rgba(74,222,128,0.3)",  color: "#4ade80", label: "טופל" },
+                    };
+                    const s = statusStyle[c.status] ?? statusStyle.new;
+                    return (
+                    <div key={c.id} style={{ background: card, border: `1px solid ${c.status === "handled" ? "rgba(74,222,128,0.2)" : c.status === "in_progress" ? "rgba(245,158,11,0.2)" : border}`, borderRadius: 14, padding: "20px 24px" }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
                         <div style={{ flex: 1 }}>
                           <div style={{ display: "flex", gap: 16, alignItems: "center", marginBottom: 10, flexWrap: "wrap" }}>
@@ -160,17 +181,33 @@ export default function AdminPage() {
                                 {c.phone && <a href={`tel:${c.phone}`} style={{ fontSize: 12, color: "#4ade80", textDecoration: "none" }}>📞 {c.phone}</a>}
                               </div>
                             </div>
+                            <span style={{ fontSize: 11, padding: "3px 10px", borderRadius: 99, background: s.bg, border: `1px solid ${s.border}`, color: s.color, fontWeight: 700 }}>{s.label}</span>
                             <span style={{ fontSize: 11, color: dim, marginRight: "auto" }}>{new Date(c.created_at).toLocaleDateString("he-IL", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
                           </div>
                           {c.message && (
-                            <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: 8, padding: "12px 14px", border: `1px solid rgba(255,255,255,0.06)` }}>
+                            <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: 8, padding: "12px 14px", border: `1px solid rgba(255,255,255,0.06)`, marginBottom: 12 }}>
                               <p style={{ color: mid, fontSize: 14, lineHeight: 1.7 }}>{c.message}</p>
                             </div>
                           )}
+                          <div style={{ display: "flex", gap: 8 }}>
+                            <button onClick={() => updateContact(c.id, "in_progress")} disabled={c.status === "in_progress"}
+                              style={{ padding: "6px 14px", borderRadius: 7, background: c.status === "in_progress" ? "rgba(245,158,11,0.2)" : "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.3)", color: "#f59e0b", fontSize: 12, fontWeight: 700, cursor: c.status === "in_progress" ? "default" : "pointer", opacity: c.status === "in_progress" ? 0.6 : 1 }}>
+                              🔄 בטיפול
+                            </button>
+                            <button onClick={() => updateContact(c.id, "handled")} disabled={c.status === "handled"}
+                              style={{ padding: "6px 14px", borderRadius: 7, background: c.status === "handled" ? "rgba(74,222,128,0.2)" : "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.3)", color: "#4ade80", fontSize: 12, fontWeight: 700, cursor: c.status === "handled" ? "default" : "pointer", opacity: c.status === "handled" ? 0.6 : 1 }}>
+                              ✓ טופל
+                            </button>
+                            <button onClick={() => deleteContact(c.id)}
+                              style={{ padding: "6px 14px", borderRadius: 7, background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.3)", color: "#f87171", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+                              ✕ מחק
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
           </div>
