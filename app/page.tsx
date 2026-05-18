@@ -497,8 +497,8 @@ export default function Home() {
                   boxShadow: "0 16px 36px rgba(59,130,246,0.65), 0 0 0 10px rgba(59,130,246,0.1)",
                 }}>EZ</div>
                 <p style={{ fontSize: 14, color: "#fff", fontWeight: 800, marginBottom: 3 }}>Eitan Ziada</p>
-                <p style={{ fontSize: 11, color: "rgba(96,165,250,0.9)", marginBottom: 5 }}>Full Stack Developer</p>
-                <p style={{ fontSize: 9, color: "rgba(255,255,255,0.28)", fontFamily: "monospace" }}>Initializing...</p>
+                <p style={{ fontSize: 11, color: "rgba(96,165,250,0.9)", marginBottom: 5 }}>מפתח Full Stack</p>
+                <p style={{ fontSize: 9, color: "rgba(255,255,255,0.28)", fontFamily: "monospace" }}>מאתחל...</p>
                 {/* Loading bar */}
                 <div style={{ margin: "18px 16px 0", height: 4, background: "rgba(255,255,255,0.06)", borderRadius: 99, overflow: "hidden" }}>
                   <div className="intro-load-bar" style={{ height: "100%", background: "linear-gradient(90deg,#1d4ed8,#3b82f6,#60a5fa,#93c5fd)", borderRadius: 99, width: 0, boxShadow: "0 0 10px rgba(59,130,246,0.9)" }} />
@@ -542,7 +542,7 @@ export default function Home() {
                 <div style={{ textAlign:"center", padding:"10px 0 10px", borderBottom:"1px solid rgba(255,255,255,0.07)", marginBottom:8 }}>
                   <div style={{ fontSize:18, fontWeight:900, color:"#fff", letterSpacing:"-1px", lineHeight:1.15 }}>EITAN<br/>ZIADA</div>
                   <div style={{ width:38, height:2, background:"linear-gradient(90deg,#3b82f6,#60a5fa)", borderRadius:99, margin:"5px auto" }} />
-                  <div style={{ fontSize:7, color:"rgba(255,255,255,0.32)", marginBottom:7 }}>Full Stack Developer</div>
+                  <div style={{ fontSize:7, color:"rgba(255,255,255,0.32)", marginBottom:7 }}>מפתח Full Stack</div>
                   <div style={{ display:"flex", gap:5, justifyContent:"center" }}>
                     <div style={{ background:"#3b82f6", borderRadius:4, padding:"3px 10px", fontSize:7, color:"#fff", fontWeight:700 }}>צור קשר</div>
                     <div style={{ border:"1px solid rgba(255,255,255,0.2)", borderRadius:4, padding:"3px 10px", fontSize:7, color:"rgba(255,255,255,0.7)" }}>עבודות</div>
@@ -583,7 +583,7 @@ export default function Home() {
           marginTop: 40, fontSize: 11, fontWeight: 600,
           color: "rgba(96,165,250,0.65)", fontFamily: "monospace",
           textTransform: "uppercase",
-        }}>{"< Loading your experience />"}</p>
+        }}>{"< טוען את החוויה שלך />"}</p>
 
       </div>}
 
