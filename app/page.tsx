@@ -540,7 +540,7 @@ export default function Home() {
                 </div>
                 {/* Hero */}
                 <div style={{ textAlign:"center", padding:"10px 0 10px", borderBottom:"1px solid rgba(255,255,255,0.07)", marginBottom:8 }}>
-                  <div style={{ fontSize:18, fontWeight:900, color:"#fff", letterSpacing:"-1px", lineHeight:1.15 }}>EITAN<br/>ZIADA</div>
+                  <div style={{ fontSize:18, fontWeight:900, color:"#fff", letterSpacing:"-1px", lineHeight:1.15 }}>איתן<br/>ציאדה</div>
                   <div style={{ width:38, height:2, background:"linear-gradient(90deg,#3b82f6,#60a5fa)", borderRadius:99, margin:"5px auto" }} />
                   <div style={{ fontSize:7, color:"rgba(255,255,255,0.32)", marginBottom:7 }}>מפתח Full Stack</div>
                   <div style={{ display:"flex", gap:5, justifyContent:"center" }}>
