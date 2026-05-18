@@ -35,14 +35,7 @@ const he = {
     { t: "דף נחיתה", tag: "Landing Page" },
   ],
   testiTitle: "חוות דעת",
-  testimonials: [
-    { name: "דוד לוי", role: "בעל מסעדה", text: "איתן בנה לנו אתר תוך שבוע. תוצאה מרהיבה ולקוחות חדשים כבר מגיעים דרכו." },
-    { name: "שירה כהן", role: "מנהלת שיווק", text: "דף הנחיתה שבנה לנו העלה את ה-conversion ב-40%. מקצועי לגמרי." },
-    { name: "יוסי מזרחי", role: "יזם", text: "עבדתי עם כמה מפתחים לפני איתן — אף אחד לא הגיע לרמה שלו." },
-    { name: "מיכל אברהם", role: "עצמאית", text: "כל הלקוחות שואלים אותי איפה עשיתי את האתר. ממליצה בחום!" },
-    { name: "רון שפירא", role: "מנכ\"ל", text: "מספק עבודה ברמת סוכנות במחיר הגון. הבין אותנו מהדקה הראשונה." },
-    { name: "נועה גולן", role: "בלוגרית", text: "האתר שלי השתנה מקצה לקצה. איתן הוא כישרון אמיתי." },
-  ],
+  testimonials: [],
   contactTitle: "צור קשר",
   contactSub: "יש לך פרויקט? בוא נדבר.",
   namePh: "שמך",
@@ -87,14 +80,7 @@ const en = {
     { t: "Landing Page", tag: "Landing Page" },
   ],
   testiTitle: "Reviews",
-  testimonials: [
-    { name: "David Levi", role: "Restaurant Owner", text: "Eitan built our website in a week. Stunning result and new customers are already coming through it." },
-    { name: "Shira Cohen", role: "Marketing Manager", text: "The landing page he built raised our conversion by 40%. Totally professional." },
-    { name: "Yossi Mizrahi", role: "Entrepreneur", text: "I worked with several developers before Eitan — none reached his level." },
-    { name: "Michal Abraham", role: "Freelancer", text: "All my clients ask where I made my website. Highly recommend!" },
-    { name: "Ron Shapira", role: "CEO", text: "Agency-level work at a fair price. He understood us from the first minute." },
-    { name: "Noa Golan", role: "Blogger", text: "My website changed completely. Eitan is a real talent." },
-  ],
+  testimonials: [],
   contactTitle: "Contact",
   contactSub: "Got a project? Let's talk.",
   namePh: "Your name",
@@ -955,11 +941,16 @@ export default function Home() {
             </div>
           )}
 
+          {(dbReviews.length === 0) && (
+            <p style={{ color: txtMid, marginTop: 32, fontSize: 15 }}>
+              {lang === "he" ? "עדיין אין ביקורות — היה הראשון לכתוב! 👆" : "No reviews yet — be the first! 👆"}
+            </p>
+          )}
           <div className="grid-3-col" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, marginTop: 24 }}>
-            {(dbReviews.length > 0 ? dbReviews : t.testimonials).map((r, i) => (
+            {dbReviews.map((r, i) => (
               <div key={i} style={{ background: card, borderRadius: 12, padding: 22, border: `1px solid ${border}` }}>
                 <p style={{ color: "#f59e0b", fontSize: 15, marginBottom: 10 }}>
-                  {"rating" in r ? "★".repeat((r as DBReview).rating) + "☆".repeat(5 - (r as DBReview).rating) : "★★★★★"}
+                  {"★".repeat(r.rating) + "☆".repeat(5 - r.rating)}
                 </p>
                 <p style={{ fontSize: 14, color: txtMid, lineHeight: 1.7, marginBottom: 16 }}>"{r.text}"</p>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
