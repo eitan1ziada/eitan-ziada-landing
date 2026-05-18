@@ -16,6 +16,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="he" dir="rtl" className="h-full">
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: `history.scrollRestoration='manual';window.scrollTo(0,0);` }} />
+      </head>
       <body className={`${inter.className} min-h-full flex flex-col bg-[#030712]`}>
         {children}
       </body>
