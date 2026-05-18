@@ -169,6 +169,13 @@ body {
   /* Carousel arrows */
   .carousel-arrow { width: 36px !important; height: 36px !important; font-size: 16px !important; }
 
+  /* Service card — stack icon + text vertically */
+  .service-card-inner {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 16px !important;
+  }
+
   /* Preview cards — scroll horizontally */
   .service-preview-wrap {
     overflow-x: auto !important;

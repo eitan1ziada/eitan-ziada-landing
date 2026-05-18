@@ -787,7 +787,7 @@ export default function Home() {
               <div style={{ flex:1, overflow:"hidden" }}>
                 <div key={activeService} style={{
                   animation: `${slideDir==="next" ? "slideInRight" : "slideInLeft"} 0.42s cubic-bezier(0.22,1,0.36,1) both`,
-                  position:"relative", background:"linear-gradient(135deg,rgba(13,27,46,0.9) 0%,rgba(6,15,30,0.95) 100%)", backdropFilter:"blur(16px)", borderRadius:24, border:"1px solid rgba(59,130,246,0.3)", overflow:"hidden", padding:"50px 48px",
+                  position:"relative", background:"linear-gradient(135deg,rgba(13,27,46,0.9) 0%,rgba(6,15,30,0.95) 100%)", backdropFilter:"blur(16px)", borderRadius:24, border:"1px solid rgba(59,130,246,0.3)", overflow:"hidden", padding:"36px 28px",
                   boxShadow:"0 0 60px rgba(59,130,246,0.12), 0 20px 60px rgba(0,0,0,0.5)",
                 }}>
                   {/* Top shine */}
@@ -795,7 +795,7 @@ export default function Home() {
                   {/* Corner glow */}
                   <div style={{ position:"absolute", top:-60, right:-60, width:200, height:200, borderRadius:"50%", background:"radial-gradient(circle,rgba(59,130,246,0.15) 0%,transparent 70%)", pointerEvents:"none" }} />
 
-                  <div style={{ display:"flex", alignItems:"center", gap:32 }}>
+                  <div className="service-card-inner" style={{ display:"flex", alignItems:"center", gap:32 }}>
                     {/* Icon */}
                     <div style={{ flexShrink:0, width:100, height:100, borderRadius:24, background:"linear-gradient(135deg,rgba(59,130,246,0.2) 0%,rgba(29,78,216,0.15) 100%)", border:"1px solid rgba(59,130,246,0.3)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:48, boxShadow:"0 0 30px rgba(59,130,246,0.2)" }}>
                       {t.services[activeService].e}
@@ -890,7 +890,7 @@ export default function Home() {
 
       {/* ── STATS ── */}
       <section style={{ background: bgAlt, padding: "36px 24px", borderTop: `1px solid ${border}`, borderBottom: `1px solid ${border}` }}>
-        <div style={{ maxWidth: 700, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, textAlign: "center" }}>
+        <div className="grid-3-col" style={{ maxWidth: 700, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, textAlign: "center" }}>
           {t.stats.map((s, i) => (
             <div key={i}>
               <p style={{ fontSize: 32, fontWeight: 900, color: accent }}>{s.n}</p>
