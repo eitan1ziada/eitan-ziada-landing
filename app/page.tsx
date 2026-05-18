@@ -1017,18 +1017,11 @@ export default function Home() {
                 const phone = (form.elements.namedItem("phone") as HTMLInputElement).value;
                 const message = (form.elements.namedItem("message") as HTMLTextAreaElement).value;
                 try {
-                  await emailjs.send(
-                    "Eitan_ziada23",
-                    "template_guj1f61",
-                    { from_name: name, to_email: email, phone, message },
-                    "O8oemYd-V9748kfNx"
-                  );
-                  await emailjs.send(
-                    "Eitan_ziada23",
-                    "template_rfdxlho",
-                    { from_name: name, to_email: email, phone, message },
-                    "O8oemYd-V9748kfNx"
-                  );
+                  await Promise.all([
+                    emailjs.send("Eitan_ziada23", "template_guj1f61", { from_name: name, to_email: email, phone, message }, "O8oemYd-V9748kfNx"),
+                    emailjs.send("Eitan_ziada23", "template_rfdxlho", { from_name: name, to_email: email, phone, message }, "O8oemYd-V9748kfNx"),
+                    fetch("/api/contacts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, email, phone, message }) }),
+                  ]);
                 } catch {}
                 setSent(true);
               }}
