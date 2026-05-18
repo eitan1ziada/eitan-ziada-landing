@@ -1,5 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+const SESSION_KEY = "admin_session";
+const SESSION_TTL = 15 * 60 * 1000; // 15 minutes
 
 type Review  = { id: string; name: string; role: string; text: string; rating: number; approved: boolean; created_at: string };
 type Contact = { id: string; name: string; email: string; phone: string; message: string; created_at: string };
@@ -21,6 +24,31 @@ export default function AdminPage() {
   const [error, setError]       = useState("");
   const [loading, setLoading]   = useState(false);
 
+  // restore session from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem(SESSION_KEY);
+    if (!saved) return;
+    const { pwd, loginAt } = JSON.parse(saved);
+    if (Date.now() - loginAt < SESSION_TTL) {
+      fetchData(pwd);
+    } else {
+      localStorage.removeItem(SESSION_KEY);
+    }
+  }, []);
+
+  const fetchData = async (pwd: string) => {
+    const [rRes, cRes] = await Promise.all([
+      fetch("/api/admin/reviews",  { headers: { "x-admin-password": pwd } }),
+      fetch("/api/contacts",       { headers: { "x-admin-password": pwd } }),
+    ]);
+    if (rRes.ok && cRes.ok) {
+      setReviews(await rRes.json());
+      setContacts(await cRes.json());
+      setPassword(pwd);
+      setAuthed(true);
+    }
+  };
+
   const login = async () => {
     setLoading(true);
     setError("");
@@ -29,6 +57,7 @@ export default function AdminPage() {
       fetch("/api/contacts",       { headers: { "x-admin-password": password } }),
     ]);
     if (rRes.ok && cRes.ok) {
+      localStorage.setItem(SESSION_KEY, JSON.stringify({ pwd: password, loginAt: Date.now() }));
       setReviews(await rRes.json());
       setContacts(await cRes.json());
       setAuthed(true);
