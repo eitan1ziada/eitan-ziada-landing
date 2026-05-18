@@ -219,6 +219,8 @@ function GridSection({ id, style, children }: { id?: string; style?: React.CSSPr
   );
 }
 
+type DBReview = { id: string; name: string; role: string; text: string };
+
 export default function Home() {
   const [lang, setLang] = useState<"he" | "en">("he");
   const [sent, setSent] = useState(false);
@@ -227,9 +229,19 @@ export default function Home() {
   const [activeService, setActiveService] = useState(0);
   const [slideDir, setSlideDir] = useState<"next"|"prev">("next");
   const [heroMouse, setHeroMouse] = useState({ x: 0, y: 0 });
+  const [dbReviews, setDbReviews] = useState<DBReview[]>([]);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [reviewSent, setReviewSent] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const heroMouseRef = useRef({ x: -9999, y: -9999 });
   const animFrameRef = useRef<number>(0);
+
+  useEffect(() => {
+    fetch("/api/reviews")
+      .then(r => r.json())
+      .then(data => { if (Array.isArray(data)) setDbReviews(data); })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -867,9 +879,67 @@ export default function Home() {
       {/* ── TESTIMONIALS ── */}
       <section id="reviews" style={{ background: bg, padding: "80px 24px" }}>
         <div style={{ maxWidth: 860, margin: "0 auto" }}>
-          <Label text={t.testiTitle} />
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12, marginBottom: 4 }}>
+            <Label text={t.testiTitle} />
+            <button onClick={() => { setShowReviewForm(true); setReviewSent(false); }}
+              style={{ padding: "9px 20px", borderRadius: 8, background: "rgba(59,130,246,0.12)", border: "1px solid rgba(59,130,246,0.35)", color: "#60a5fa", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+              {lang === "he" ? "✍️ כתוב ביקורת" : "✍️ Write a Review"}
+            </button>
+          </div>
+
+          {/* Review submission modal */}
+          {showReviewForm && (
+            <div style={{ position: "fixed", inset: 0, zIndex: 999, background: "rgba(2,9,23,0.85)", backdropFilter: "blur(8px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}
+              onClick={e => { if (e.target === e.currentTarget) setShowReviewForm(false); }}>
+              <div style={{ background: "#0d1b2e", border: "1px solid #1a3050", borderRadius: 20, padding: "36px 32px", width: "100%", maxWidth: 440 }}>
+                <h3 style={{ color: txt, fontSize: 20, fontWeight: 800, marginBottom: 6 }}>{lang === "he" ? "כתוב ביקורת" : "Write a Review"}</h3>
+                <p style={{ color: txtMid, fontSize: 13, marginBottom: 24 }}>{lang === "he" ? "הביקורת תועלה לאחר אישור" : "Review will appear after approval"}</p>
+                {reviewSent ? (
+                  <div style={{ textAlign: "center", padding: "16px 0" }}>
+                    <p style={{ fontSize: 36, marginBottom: 10 }}>🙏</p>
+                    <p style={{ color: txt, fontWeight: 700, fontSize: 16 }}>{lang === "he" ? "תודה! הביקורת שלך התקבלה." : "Thanks! Your review was received."}</p>
+                    <button onClick={() => setShowReviewForm(false)} style={{ marginTop: 20, padding: "10px 24px", borderRadius: 8, background: accent, color: "#fff", fontWeight: 700, border: "none", cursor: "pointer" }}>סגור</button>
+                  </div>
+                ) : (
+                  <form onSubmit={async e => {
+                    e.preventDefault();
+                    const f = e.currentTarget as HTMLFormElement;
+                    const name = (f.elements.namedItem("rname") as HTMLInputElement).value;
+                    const role = (f.elements.namedItem("rrole") as HTMLInputElement).value;
+                    const text = (f.elements.namedItem("rtext") as HTMLTextAreaElement).value;
+                    await fetch("/api/reviews", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, role, text }) });
+                    setReviewSent(true);
+                  }} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    <input required name="rname" placeholder={lang === "he" ? "שמך" : "Your name"}
+                      style={{ padding: "11px 13px", borderRadius: 8, border: `1px solid ${border}`, background: "#060f1e", color: txt, fontSize: 14, outline: "none" }}
+                      onFocus={e => (e.currentTarget.style.borderColor = accent)}
+                      onBlur={e => (e.currentTarget.style.borderColor = border)} />
+                    <input name="rrole" placeholder={lang === "he" ? "תפקידך (אופציונלי)" : "Your role (optional)"}
+                      style={{ padding: "11px 13px", borderRadius: 8, border: `1px solid ${border}`, background: "#060f1e", color: txt, fontSize: 14, outline: "none" }}
+                      onFocus={e => (e.currentTarget.style.borderColor = accent)}
+                      onBlur={e => (e.currentTarget.style.borderColor = border)} />
+                    <textarea required name="rtext" rows={4} placeholder={lang === "he" ? "מה תרצה לשתף?" : "What would you like to share?"}
+                      style={{ padding: "11px 13px", borderRadius: 8, border: `1px solid ${border}`, background: "#060f1e", color: txt, fontSize: 14, outline: "none", resize: "none" }}
+                      onFocus={e => (e.currentTarget.style.borderColor = accent)}
+                      onBlur={e => (e.currentTarget.style.borderColor = border)} />
+                    <div style={{ display: "flex", gap: 10 }}>
+                      <button type="button" onClick={() => setShowReviewForm(false)}
+                        style={{ flex: 1, padding: "11px", borderRadius: 8, background: "transparent", border: `1px solid ${border}`, color: txtMid, fontSize: 14, cursor: "pointer" }}>
+                        {lang === "he" ? "ביטול" : "Cancel"}
+                      </button>
+                      <button type="submit"
+                        style={{ flex: 2, padding: "11px", borderRadius: 8, background: accent, color: "#fff", fontWeight: 700, fontSize: 14, border: "none", cursor: "pointer" }}>
+                        {lang === "he" ? "שלח ביקורת" : "Submit Review"}
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
+            </div>
+          )}
+
           <div className="grid-3-col" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, marginTop: 24 }}>
-            {t.testimonials.map((r, i) => (
+            {(dbReviews.length > 0 ? dbReviews : t.testimonials).map((r, i) => (
               <div key={i} style={{ background: card, borderRadius: 12, padding: 22, border: `1px solid ${border}` }}>
                 <p style={{ color: "#f59e0b", fontSize: 15, marginBottom: 10 }}>★★★★★</p>
                 <p style={{ fontSize: 14, color: txtMid, lineHeight: 1.7, marginBottom: 16 }}>"{r.text}"</p>
