@@ -911,6 +911,12 @@ export default function Home() {
                     { from_name: name, to_email: email, phone, message },
                     "O8oemYd-V9748kfNx"
                   );
+                  await emailjs.send(
+                    "Eitan_ziada23",
+                    "template_rfdxlho",
+                    { from_name: name, to_email: email, phone, message },
+                    "O8oemYd-V9748kfNx"
+                  );
                 } catch {}
                 setSent(true);
               }}
