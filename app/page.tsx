@@ -16,7 +16,6 @@ const he = {
   aboutText2: "הגישה שלי פשוטה: כל פרויקט מקבל ממני 100%. אני לא מסתפק בפחות מהכי טוב — עיצוב שנראה מקצועי, קוד שעובד מהיר, ותוצאות שמדברות בעד עצמן.",
   techTitle: "טכנולוגיות",
   stats: [
-    { n: "20+", l: "פרויקטים" },
     { n: "100%", l: "מסירות" },
     { n: "24/6", l: "זמינות" },
   ],
@@ -69,7 +68,6 @@ const en = {
   aboutText2: "My approach is simple: every project gets 100% from me. Professional design, fast code, and results that speak for themselves.",
   techTitle: "Tech Stack",
   stats: [
-    { n: "20+", l: "Projects" },
     { n: "100%", l: "Dedication" },
     { n: "24/6", l: "Availability" },
   ],
@@ -981,7 +979,7 @@ export default function Home() {
 
       {/* ── STATS ── */}
       <section style={{ background: bgAlt, padding: "36px 24px", borderTop: `1px solid ${border}`, borderBottom: `1px solid ${border}` }}>
-        <div style={{ maxWidth: 700, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, textAlign: "center" }}>
+        <div style={{ maxWidth: 500, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 16, textAlign: "center" }}>
           {t.stats.map((s, i) => (
             <div key={i}>
               <p style={{ fontSize: 32, fontWeight: 900, color: accent }}>{s.n}</p>
