@@ -146,3 +146,36 @@ body {
 .intro-phones-wrap    { animation: phonesExit        0.8s  cubic-bezier(0.55,0,1,0.45) 3.8s both; }
 .intro-label          { animation: introLabelAnim    0.55s ease 1.6s both; }
 .intro-ambient        { animation: ambientPulse      2.5s  ease-in-out 0.5s infinite; }
+
+/* ── MOBILE ── */
+@media (max-width: 768px) {
+
+  /* Intro — טלפון אחד קטן יותר */
+  .intro-phones-wrap {
+    gap: 16px !important;
+    transform: scale(0.62) !important;
+    transform-origin: center center;
+  }
+
+  /* Nav */
+  .mobile-nav-links { display: none !important; }
+  .mobile-nav-cta   { display: none !important; }
+  .mobile-hamburger { display: flex !important; }
+
+  /* Grid sections */
+  .grid-3-col { grid-template-columns: 1fr !important; }
+  .grid-2-col { grid-template-columns: 1fr !important; }
+
+  /* Carousel arrows */
+  .carousel-arrow { width: 36px !important; height: 36px !important; font-size: 16px !important; }
+
+  /* Preview cards — scroll horizontally */
+  .service-preview-wrap {
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    padding-bottom: 8px;
+    justify-content: flex-start !important;
+  }
+  .service-preview-wrap::-webkit-scrollbar { height: 3px; }
+  .service-preview-wrap::-webkit-scrollbar-thumb { background: rgba(59,130,246,0.3); border-radius: 99px; }
+}

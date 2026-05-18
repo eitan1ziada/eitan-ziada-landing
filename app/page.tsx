@@ -223,6 +223,7 @@ export default function Home() {
   const [lang, setLang] = useState<"he" | "en">("he");
   const [sent, setSent] = useState(false);
   const [introVisible, setIntroVisible] = useState(true);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [activeService, setActiveService] = useState(0);
   const [slideDir, setSlideDir] = useState<"next"|"prev">("next");
   const [heroMouse, setHeroMouse] = useState({ x: 0, y: 0 });
@@ -579,7 +580,7 @@ export default function Home() {
         backdropFilter: "blur(20px)",
         WebkitBackdropFilter: "blur(20px)",
         borderBottom: "1px solid rgba(59,130,246,0.12)",
-        padding: "0 48px", height: 64,
+        padding: "0 24px", height: 64,
         display: "flex", alignItems: "center", justifyContent: "space-between",
         boxShadow: "0 4px 30px rgba(0,0,0,0.3)",
       }}>
@@ -590,8 +591,8 @@ export default function Home() {
           textShadow: "0 0 20px rgba(59,130,246,0.5)",
         }}>EZ.</span>
 
-        {/* Links */}
-        <div style={{ display: "flex", gap: 6 }}>
+        {/* Links — desktop only */}
+        <div className="mobile-nav-links" style={{ display: "flex", gap: 6 }}>
           {t.nav.slice(0, -1).map((n, i) => (
             <a key={i} href={`#${ids[i]}`}
               style={{
@@ -614,8 +615,8 @@ export default function Home() {
           ))}
         </div>
 
-        {/* CTA */}
-        <a href="#contact" style={{
+        {/* CTA — desktop only */}
+        <a className="mobile-nav-cta" href="#contact" style={{
           fontSize: 13, fontWeight: 700, color: "#fff",
           background: accent, padding: "8px 20px", borderRadius: 8,
           textDecoration: "none", boxShadow: "0 0 16px rgba(59,130,246,0.35)",
@@ -625,7 +626,38 @@ export default function Home() {
           onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.boxShadow = "0 0 16px rgba(59,130,246,0.35)"; }}>
           {lang === "he" ? "צור קשר" : "Contact"}
         </a>
+
+        {/* Hamburger — mobile only */}
+        <button className="mobile-hamburger" onClick={() => setMenuOpen(o => !o)} style={{
+          display: "none", flexDirection: "column", gap: 5, background: "none",
+          border: "none", cursor: "pointer", padding: 8,
+        }}>
+          {[0,1,2].map(i => (
+            <span key={i} style={{ display: "block", width: 24, height: 2, background: "#fff", borderRadius: 2,
+              transform: menuOpen ? (i===0 ? "rotate(45deg) translate(5px,5px)" : i===2 ? "rotate(-45deg) translate(5px,-5px)" : "scale(0)") : "none",
+              transition: "all 0.25s",
+            }} />
+          ))}
+        </button>
       </nav>
+
+      {/* Mobile menu */}
+      {menuOpen && (
+        <div style={{
+          position: "fixed", top: 64, left: 0, right: 0, zIndex: 99,
+          background: "rgba(2,9,23,0.97)", backdropFilter: "blur(20px)",
+          borderBottom: "1px solid rgba(59,130,246,0.15)",
+          display: "flex", flexDirection: "column", padding: "16px 24px 24px",
+          gap: 4,
+        }}>
+          {t.nav.map((n, i) => (
+            <a key={i} href={`#${ids[i]}`} onClick={() => setMenuOpen(false)}
+              style={{ fontSize: 18, color: txtMid, textDecoration: "none", fontWeight: 600, padding: "12px 0", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+              {n}
+            </a>
+          ))}
+        </div>
+      )}
 
       {/* ── HERO ── */}
       <section
@@ -745,7 +777,7 @@ export default function Home() {
             {/* Main card */}
             <div style={{ display:"flex", alignItems:"center", gap:24 }}>
               {/* Prev button */}
-              <button onClick={prevService} style={{ flexShrink:0, width:48, height:48, borderRadius:"50%", background:"rgba(59,130,246,0.1)", border:"1px solid rgba(59,130,246,0.3)", color:"#60a5fa", fontSize:20, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.2s" }}
+              <button onClick={prevService} className="carousel-arrow" style={{ flexShrink:0, width:48, height:48, borderRadius:"50%", background:"rgba(59,130,246,0.1)", border:"1px solid rgba(59,130,246,0.3)", color:"#60a5fa", fontSize:20, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.2s" }}
                 onMouseEnter={e=>{(e.currentTarget as HTMLButtonElement).style.background="rgba(59,130,246,0.25)";}}
                 onMouseLeave={e=>{(e.currentTarget as HTMLButtonElement).style.background="rgba(59,130,246,0.1)";}}>
                 {lang==="he" ? "›" : "‹"}
@@ -789,7 +821,7 @@ export default function Home() {
               </div>
 
               {/* Next button */}
-              <button onClick={nextService} style={{ flexShrink:0, width:48, height:48, borderRadius:"50%", background:"rgba(59,130,246,0.1)", border:"1px solid rgba(59,130,246,0.3)", color:"#60a5fa", fontSize:20, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.2s" }}
+              <button onClick={nextService} className="carousel-arrow" style={{ flexShrink:0, width:48, height:48, borderRadius:"50%", background:"rgba(59,130,246,0.1)", border:"1px solid rgba(59,130,246,0.3)", color:"#60a5fa", fontSize:20, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.2s" }}
                 onMouseEnter={e=>{(e.currentTarget as HTMLButtonElement).style.background="rgba(59,130,246,0.25)";}}
                 onMouseLeave={e=>{(e.currentTarget as HTMLButtonElement).style.background="rgba(59,130,246,0.1)";}}>
                 {lang==="he" ? "‹" : "›"}
@@ -797,7 +829,7 @@ export default function Home() {
             </div>
 
             {/* Preview cards */}
-            <div style={{ display:"flex", gap:12, marginTop:20, justifyContent:"center" }}>
+            <div className="service-preview-wrap" style={{ display:"flex", gap:12, marginTop:20, justifyContent:"center" }}>
               {t.services.map((s,i)=>(
                 <button key={i} onClick={()=>goToService(i, i>activeService?"next":"prev")} style={{ padding:"10px 16px", borderRadius:12, background: i===activeService ? "rgba(59,130,246,0.2)" : "rgba(255,255,255,0.03)", border: i===activeService ? "1px solid rgba(59,130,246,0.45)" : "1px solid rgba(255,255,255,0.06)", cursor:"pointer", transition:"all 0.25s", display:"flex", alignItems:"center", gap:8 }}>
                   <span style={{ fontSize:16 }}>{s.e}</span>
@@ -813,7 +845,7 @@ export default function Home() {
       <GridSection id="works" style={{ background: bgAlt, padding: "80px 24px", borderTop: `1px solid ${border}`, borderBottom: `1px solid ${border}` }}>
         <div style={{ maxWidth: 860, margin: "0 auto" }}>
           <Label text={t.worksTitle} />
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, marginTop: 24 }}>
+          <div className="grid-3-col" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, marginTop: 24 }}>
             {t.works.map((w, i) => (
               <div key={i} style={{ borderRadius: 12, overflow: "hidden", border: `1px solid ${border}`, background: card }}>
                 <div style={{ height: 140, background: `linear-gradient(135deg, ${accent}22, ${accentL}11)`, display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
@@ -836,7 +868,7 @@ export default function Home() {
       <section id="reviews" style={{ background: bg, padding: "80px 24px" }}>
         <div style={{ maxWidth: 860, margin: "0 auto" }}>
           <Label text={t.testiTitle} />
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, marginTop: 24 }}>
+          <div className="grid-3-col" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, marginTop: 24 }}>
             {t.testimonials.map((r, i) => (
               <div key={i} style={{ background: card, borderRadius: 12, padding: 22, border: `1px solid ${border}` }}>
                 <p style={{ color: "#f59e0b", fontSize: 15, marginBottom: 10 }}>★★★★★</p>
@@ -873,7 +905,7 @@ export default function Home() {
         <div style={{ maxWidth: 860, margin: "0 auto" }}>
           <Label text={t.contactTitle} />
           <p style={{ color: txtMid, marginTop: 8, marginBottom: 32 }}>{t.contactSub}</p>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 40, alignItems: "start" }}>
+          <div className="grid-2-col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 40, alignItems: "start" }}>
           <div style={{ background: card, borderRadius: 16, padding: 28, border: `1px solid ${border}` }}>
             <div style={{ width: 56, height: 56, borderRadius: 14, background: accent, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, marginBottom: 16 }}>👨‍💻</div>
             <h3 style={{ fontSize: 20, fontWeight: 800, color: txt, marginBottom: 8 }}>{lang === "he" ? "איתן ציאדה" : "Eitan Ziada"}</h3>
