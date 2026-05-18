@@ -496,7 +496,7 @@ export default function Home() {
                   fontSize: 32, fontWeight: 900, color: "#fff",
                   boxShadow: "0 16px 36px rgba(59,130,246,0.65), 0 0 0 10px rgba(59,130,246,0.1)",
                 }}>EZ</div>
-                <p style={{ fontSize: 14, color: "#fff", fontWeight: 800, marginBottom: 3 }}>Eitan Ziada</p>
+                <p style={{ fontSize: 14, color: "#fff", fontWeight: 800, marginBottom: 3 }}>איתן ציאדה</p>
                 <p style={{ fontSize: 11, color: "rgba(96,165,250,0.9)", marginBottom: 5 }}>מפתח Full Stack</p>
                 <p style={{ fontSize: 9, color: "rgba(255,255,255,0.28)", fontFamily: "monospace" }}>מאתחל...</p>
                 {/* Loading bar */}
