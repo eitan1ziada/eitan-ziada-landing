@@ -113,13 +113,36 @@ body {
   0%, 100% { opacity: 0.6; transform: scale(1); }
   50%      { opacity: 1;   transform: scale(1.18); }
 }
+@keyframes serviceOrb {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.7; }
+  33%       { transform: translate(40px, -30px) scale(1.15); opacity: 1; }
+  66%       { transform: translate(-25px, 20px) scale(0.9); opacity: 0.5; }
+}
+@keyframes serviceOrbReverse {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.5; }
+  33%       { transform: translate(-35px, 25px) scale(1.1); opacity: 0.8; }
+  66%       { transform: translate(20px, -15px) scale(0.92); opacity: 0.6; }
+}
+@keyframes serviceBeam {
+  0%   { transform: translateX(-100%) skewX(-15deg); opacity: 0; }
+  50%  { opacity: 0.6; }
+  100% { transform: translateX(400%) skewX(-15deg); opacity: 0; }
+}
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(80px) scale(0.97); }
+  to   { opacity: 1; transform: translateX(0)    scale(1);    }
+}
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-80px) scale(0.97); }
+  to   { opacity: 1; transform: translateX(0)     scale(1);    }
+}
 
-.intro-overlay        { animation: introOverlayFull  3.4s ease forwards; }
+.intro-overlay        { animation: introOverlayFull  5.0s ease forwards; }
 .intro-phone-left     { animation: phoneEnterLeft    0.9s cubic-bezier(0.34,1.38,0.64,1) 0.15s both; }
 .intro-phone-right    { animation: phoneEnterRight   0.9s cubic-bezier(0.34,1.38,0.64,1) 0.32s both; }
 .intro-screen-content { animation: screenOn          0.55s ease 0.95s both; }
 .intro-app-icon       { animation: appIconBounce     0.65s cubic-bezier(0.34,1.38,0.64,1) 1.12s both; }
 .intro-load-bar       { animation: loadBarFill       1.2s  ease 1.25s both; }
-.intro-phones-wrap    { animation: phonesExit        0.8s  cubic-bezier(0.55,0,1,0.45) 2.35s both; }
+.intro-phones-wrap    { animation: phonesExit        0.8s  cubic-bezier(0.55,0,1,0.45) 3.8s both; }
 .intro-label          { animation: introLabelAnim    0.55s ease 1.6s both; }
 .intro-ambient        { animation: ambientPulse      2.5s  ease-in-out 0.5s infinite; }

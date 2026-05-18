@@ -1,11 +1,11 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const he = {
   dir: "rtl",
   nav: ["מי אני", "כישורים", "שירותים", "עבודות", "חוות דעת", "צור קשר"],
   name: "איתן ציאדה",
-  role: "מפתח Full Stack | בן 20",
+  role: "",
   tagline: "בונה אתרים, אפליקציות ודפי נחיתה מקצועיים",
   sub: "הופך את הרעיון שלך למוצר דיגיטלי מהיר, יפה ועם תוצאות אמיתיות.",
   cta1: "דברו איתי",
@@ -118,10 +118,255 @@ const accentL = "#60a5fa";
 const txt     = "#f1f5f9";
 const txtMid  = "#94a3b8";
 
+function GridSection({ id, style, children }: { id?: string; style?: React.CSSProperties; children: React.ReactNode }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const mouseRef = useRef({ x: -9999, y: -9999 });
+  const frameRef = useRef<number>(0);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const setSize = () => {
+      const p = canvas.parentElement;
+      if (!p) return;
+      canvas.width = p.clientWidth || window.innerWidth;
+      canvas.height = p.clientHeight || 600;
+    };
+    const initRaf = requestAnimationFrame(() => { setSize(); window.addEventListener("resize", setSize); });
+
+    const SPACING = 48, RADIUS = 200, STRENGTH = 100;
+
+    const getPoint = (col: number, row: number, mx: number, my: number) => {
+      const bx = col * SPACING, by = row * SPACING;
+      const dx = bx - mx, dy = by - my;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < RADIUS && dist > 0) {
+        const force = (1 - dist / RADIUS) * STRENGTH;
+        return { x: bx + (dx / dist) * force, y: by + (dy / dist) * force };
+      }
+      return { x: bx, y: by };
+    };
+
+    const draw = () => {
+      const { width, height } = canvas;
+      if (!width || !height) { frameRef.current = requestAnimationFrame(draw); return; }
+      ctx.clearRect(0, 0, width, height);
+      const mx = mouseRef.current.x, my = mouseRef.current.y;
+      const cols = Math.ceil(width / SPACING) + 2, rows = Math.ceil(height / SPACING) + 2;
+      const hasMouse = mx > -1000;
+
+      if (hasMouse) {
+        const g = ctx.createRadialGradient(mx, my, 0, mx, my, RADIUS * 1.2);
+        g.addColorStop(0, "rgba(59,130,246,0.15)"); g.addColorStop(1, "rgba(59,130,246,0)");
+        ctx.fillStyle = g; ctx.fillRect(0, 0, width, height);
+      }
+
+      ctx.lineWidth = 1;
+      for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols - 1; col++) {
+          const p1 = getPoint(col, row, mx, my), p2 = getPoint(col + 1, row, mx, my);
+          const nearest = Math.min(Math.hypot(col * SPACING - mx, row * SPACING - my), Math.hypot((col+1) * SPACING - mx, row * SPACING - my));
+          const alpha = hasMouse && nearest < RADIUS ? 0.12 + (1 - nearest / RADIUS) * 0.5 : 0.1;
+          ctx.beginPath(); ctx.strokeStyle = `rgba(59,130,246,${alpha.toFixed(2)})`;
+          ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+        }
+      }
+      for (let col = 0; col < cols; col++) {
+        for (let row = 0; row < rows - 1; row++) {
+          const p1 = getPoint(col, row, mx, my), p2 = getPoint(col, row + 1, mx, my);
+          const nearest = Math.min(Math.hypot(col * SPACING - mx, row * SPACING - my), Math.hypot(col * SPACING - mx, (row+1) * SPACING - my));
+          const alpha = hasMouse && nearest < RADIUS ? 0.12 + (1 - nearest / RADIUS) * 0.5 : 0.1;
+          ctx.beginPath(); ctx.strokeStyle = `rgba(59,130,246,${alpha.toFixed(2)})`;
+          ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+        }
+      }
+      if (hasMouse) {
+        for (let col = 0; col < cols; col++) {
+          for (let row = 0; row < rows; row++) {
+            const dist = Math.hypot(col * SPACING - mx, row * SPACING - my);
+            if (dist < RADIUS) {
+              const p = getPoint(col, row, mx, my), t = 1 - dist / RADIUS;
+              ctx.beginPath(); ctx.arc(p.x, p.y, t * 2 + 0.5, 0, Math.PI * 2);
+              ctx.fillStyle = `rgba(96,165,250,${(t * 0.9).toFixed(2)})`; ctx.fill();
+            }
+          }
+        }
+      }
+      frameRef.current = requestAnimationFrame(draw);
+    };
+
+    frameRef.current = requestAnimationFrame(draw);
+    return () => {
+      cancelAnimationFrame(initRaf); cancelAnimationFrame(frameRef.current);
+      window.removeEventListener("resize", setSize);
+    };
+  }, []);
+
+  return (
+    <section
+      id={id}
+      onMouseMove={e => { const r = e.currentTarget.getBoundingClientRect(); mouseRef.current = { x: e.clientX - r.left, y: e.clientY - r.top }; }}
+      onMouseLeave={() => { mouseRef.current = { x: -9999, y: -9999 }; }}
+      style={{ position: "relative", overflow: "hidden", ...style }}
+    >
+      <canvas ref={canvasRef} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }} />
+      {children}
+    </section>
+  );
+}
+
 export default function Home() {
   const [lang, setLang] = useState<"he" | "en">("he");
   const [sent, setSent] = useState(false);
+  const [introVisible, setIntroVisible] = useState(true);
+  const [activeService, setActiveService] = useState(0);
+  const [slideDir, setSlideDir] = useState<"next"|"prev">("next");
+  const [heroMouse, setHeroMouse] = useState({ x: 0, y: 0 });
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const heroMouseRef = useRef({ x: -9999, y: -9999 });
+  const animFrameRef = useRef<number>(0);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const setSize = () => {
+      const parent = canvas.parentElement;
+      if (!parent) return;
+      canvas.width = parent.clientWidth || window.innerWidth;
+      canvas.height = parent.clientHeight || 600;
+    };
+
+    // wait one frame so the DOM is laid out
+    const raf = requestAnimationFrame(() => {
+      setSize();
+      window.addEventListener("resize", setSize);
+    });
+
+    const SPACING = 48;
+    const RADIUS = 200;
+    const STRENGTH = 100;
+
+    const getPoint = (col: number, row: number, mx: number, my: number) => {
+      const bx = col * SPACING;
+      const by = row * SPACING;
+      const dx = bx - mx;
+      const dy = by - my;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < RADIUS && dist > 0) {
+        const force = (1 - dist / RADIUS) * STRENGTH;
+        return { x: bx + (dx / dist) * force, y: by + (dy / dist) * force };
+      }
+      return { x: bx, y: by };
+    };
+
+    const draw = () => {
+      const { width, height } = canvas;
+      if (!width || !height) { animFrameRef.current = requestAnimationFrame(draw); return; }
+
+      ctx.clearRect(0, 0, width, height);
+      const mx = heroMouseRef.current.x;
+      const my = heroMouseRef.current.y;
+      const cols = Math.ceil(width / SPACING) + 2;
+      const rows = Math.ceil(height / SPACING) + 2;
+      const hasMouse = mx > -1000;
+
+      // glow under cursor
+      if (hasMouse) {
+        const grad = ctx.createRadialGradient(mx, my, 0, mx, my, RADIUS * 1.2);
+        grad.addColorStop(0, "rgba(59,130,246,0.15)");
+        grad.addColorStop(1, "rgba(59,130,246,0)");
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, width, height);
+      }
+
+      // draw each segment individually so alpha can vary
+      ctx.lineWidth = 1;
+      for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols - 1; col++) {
+          const p1 = getPoint(col, row, mx, my);
+          const p2 = getPoint(col + 1, row, mx, my);
+          const d1 = Math.hypot(col * SPACING - mx, row * SPACING - my);
+          const d2 = Math.hypot((col + 1) * SPACING - mx, row * SPACING - my);
+          const nearest = Math.min(d1, d2);
+          const alpha = hasMouse && nearest < RADIUS ? 0.12 + (1 - nearest / RADIUS) * 0.5 : 0.1;
+          ctx.beginPath();
+          ctx.strokeStyle = `rgba(59,130,246,${alpha.toFixed(2)})`;
+          ctx.moveTo(p1.x, p1.y);
+          ctx.lineTo(p2.x, p2.y);
+          ctx.stroke();
+        }
+      }
+      for (let col = 0; col < cols; col++) {
+        for (let row = 0; row < rows - 1; row++) {
+          const p1 = getPoint(col, row, mx, my);
+          const p2 = getPoint(col, row + 1, mx, my);
+          const d1 = Math.hypot(col * SPACING - mx, row * SPACING - my);
+          const d2 = Math.hypot(col * SPACING - mx, (row + 1) * SPACING - my);
+          const nearest = Math.min(d1, d2);
+          const alpha = hasMouse && nearest < RADIUS ? 0.12 + (1 - nearest / RADIUS) * 0.5 : 0.1;
+          ctx.beginPath();
+          ctx.strokeStyle = `rgba(59,130,246,${alpha.toFixed(2)})`;
+          ctx.moveTo(p1.x, p1.y);
+          ctx.lineTo(p2.x, p2.y);
+          ctx.stroke();
+        }
+      }
+
+      // glowing dots near cursor
+      if (hasMouse) {
+        for (let col = 0; col < cols; col++) {
+          for (let row = 0; row < rows; row++) {
+            const dist = Math.hypot(col * SPACING - mx, row * SPACING - my);
+            if (dist < RADIUS) {
+              const p = getPoint(col, row, mx, my);
+              const t = 1 - dist / RADIUS;
+              ctx.beginPath();
+              ctx.arc(p.x, p.y, t * 2 + 0.5, 0, Math.PI * 2);
+              ctx.fillStyle = `rgba(96,165,250,${(t * 0.9).toFixed(2)})`;
+              ctx.fill();
+            }
+          }
+        }
+      }
+
+      animFrameRef.current = requestAnimationFrame(draw);
+    };
+
+    animFrameRef.current = requestAnimationFrame(draw);
+    return () => {
+      cancelAnimationFrame(raf);
+      cancelAnimationFrame(animFrameRef.current);
+      window.removeEventListener("resize", setSize);
+    };
+  }, []);
+
+  const handleHeroMouseMove = (e: React.MouseEvent<HTMLElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    heroMouseRef.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    const cx = rect.width / 2;
+    const cy = rect.height / 2;
+    setHeroMouse({ x: (e.clientX - rect.left - cx) / rect.width, y: (e.clientY - rect.top - cy) / rect.height });
+  };
+
+  const handleHeroMouseLeave = () => {
+    heroMouseRef.current = { x: -9999, y: -9999 };
+    setHeroMouse({ x: 0, y: 0 });
+  };
   const t = lang === "he" ? he : en;
+
+  const goToService = (idx: number, dir: "next"|"prev") => {
+    setSlideDir(dir);
+    setActiveService(idx);
+  };
+
+  const nextService = () => goToService((activeService + 1) % t.services.length, "next");
+  const prevService = () => goToService((activeService - 1 + t.services.length) % t.services.length, "prev");
 
   useEffect(() => {
     const html = document.documentElement;
@@ -132,13 +377,24 @@ export default function Home() {
     requestAnimationFrame(() => { html.style.scrollBehavior = ''; });
   }, []);
 
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setIntroVisible(false);
+      requestAnimationFrame(() => {
+        window.scrollBy(0, 1);
+        requestAnimationFrame(() => window.scrollBy(0, -1));
+      });
+    }, 5200);
+    return () => clearTimeout(t);
+  }, []);
+
   const ids = ["about", "skills", "services", "works", "reviews", "contact"];
 
   return (
     <div dir={t.dir as "rtl" | "ltr"} style={{ background: bg, color: txt, fontFamily: "system-ui, sans-serif" }}>
 
       {/* ── INTRO ── */}
-      <div
+      {introVisible && <div
         className="intro-overlay"
         style={{
           position: "fixed", inset: 0, zIndex: 9999,
@@ -203,7 +459,7 @@ export default function Home() {
             <div style={{ position:"absolute", inset:-22, borderRadius:46, border:"1px solid rgba(59,130,246,0.22)", animation:"glowRingPulse 2.2s ease 1.1s infinite", pointerEvents:"none" }} />
             <div style={{ position:"absolute", inset:-44, borderRadius:58, border:"1px solid rgba(59,130,246,0.10)", animation:"glowRingPulse 2.2s ease 1.5s infinite", pointerEvents:"none" }} />
             <div className="intro-phone-left" style={{
-              width: 188, height: 392, borderRadius: 38,
+              width: 230, height: 480, borderRadius: 38,
               border: "2px solid rgba(59,130,246,0.7)",
               background: "linear-gradient(165deg,#0c1c32 0%,#060f1e 100%)",
               boxShadow: "0 0 70px rgba(59,130,246,0.38), 0 32px 90px rgba(0,0,0,0.75), inset 0 0 30px rgba(59,130,246,0.06)",
@@ -248,7 +504,7 @@ export default function Home() {
           <div style={{ position: "relative" }}>
             <div style={{ position:"absolute", inset:-22, borderRadius:46, border:"1px solid rgba(59,130,246,0.22)", animation:"glowRingPulse 2.2s ease 1.3s infinite", pointerEvents:"none" }} />
             <div className="intro-phone-right" style={{
-              width: 188, height: 392, borderRadius: 38,
+              width: 230, height: 480, borderRadius: 38,
               border: "2px solid rgba(59,130,246,0.7)",
               background: "linear-gradient(165deg,#0c1c32 0%,#060f1e 100%)",
               boxShadow: "0 0 70px rgba(59,130,246,0.38), 0 32px 90px rgba(0,0,0,0.75), inset 0 0 30px rgba(59,130,246,0.06)",
@@ -313,37 +569,71 @@ export default function Home() {
           textTransform: "uppercase",
         }}>{"< Loading your experience />"}</p>
 
-      </div>
+      </div>}
 
       {/* ── NAV ── */}
       <nav style={{
         position: "sticky", top: 0, zIndex: 100,
-        background: bg, borderBottom: `1px solid ${border}`,
-        padding: "0 32px", height: 60,
+        background: "rgba(2,9,23,0.75)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+        borderBottom: "1px solid rgba(59,130,246,0.12)",
+        padding: "0 48px", height: 64,
         display: "flex", alignItems: "center", justifyContent: "space-between",
+        boxShadow: "0 4px 30px rgba(0,0,0,0.3)",
       }}>
-        <span style={{ fontWeight: 900, fontSize: 20, color: accent }}>EZ.</span>
-        <div style={{ display: "flex", gap: 28 }}>
-          {t.nav.map((n, i) => (
+        {/* Logo */}
+        <span style={{
+          fontWeight: 900, fontSize: 22, color: accent,
+          letterSpacing: "-0.5px",
+          textShadow: "0 0 20px rgba(59,130,246,0.5)",
+        }}>EZ.</span>
+
+        {/* Links */}
+        <div style={{ display: "flex", gap: 6 }}>
+          {t.nav.slice(0, -1).map((n, i) => (
             <a key={i} href={`#${ids[i]}`}
-              style={{ fontSize: 14, color: txtMid, textDecoration: "none", fontWeight: 500 }}
-              onMouseEnter={e => (e.currentTarget.style.color = accent)}
-              onMouseLeave={e => (e.currentTarget.style.color = txtMid)}>
+              style={{
+                fontSize: 14, color: txtMid, textDecoration: "none",
+                fontWeight: 500, padding: "6px 14px", borderRadius: 8,
+                transition: "all 0.2s",
+              }}
+              onMouseEnter={e => {
+                const el = e.currentTarget as HTMLAnchorElement;
+                el.style.color = "#fff";
+                el.style.background = "rgba(59,130,246,0.1)";
+              }}
+              onMouseLeave={e => {
+                const el = e.currentTarget as HTMLAnchorElement;
+                el.style.color = txtMid;
+                el.style.background = "transparent";
+              }}>
               {n}
             </a>
           ))}
         </div>
-        <button onClick={() => setLang(l => l === "he" ? "en" : "he")}
-          style={{ fontSize: 13, fontWeight: 700, color: accent, border: `1px solid ${border}`, background: "transparent", padding: "5px 14px", borderRadius: 6, cursor: "pointer" }}>
-          {lang === "he" ? "EN" : "עב"}
-        </button>
+
+        {/* CTA */}
+        <a href="#contact" style={{
+          fontSize: 13, fontWeight: 700, color: "#fff",
+          background: accent, padding: "8px 20px", borderRadius: 8,
+          textDecoration: "none", boxShadow: "0 0 16px rgba(59,130,246,0.35)",
+          transition: "all 0.2s",
+        }}
+          onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.boxShadow = "0 0 24px rgba(59,130,246,0.6)"; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.boxShadow = "0 0 16px rgba(59,130,246,0.35)"; }}>
+          {lang === "he" ? "צור קשר" : "Contact"}
+        </a>
       </nav>
 
       {/* ── HERO ── */}
-      <section style={{ position: "relative", overflow: "hidden", background: bg, color: txt, textAlign: "center", padding: "120px 24px 100px", borderBottom: `1px solid ${border}` }}>
-        <div className="hero-grid" />
-        <div className="hero-orb-1" />
-        <div className="hero-orb-2" />
+      <section
+        onMouseMove={handleHeroMouseMove}
+        onMouseLeave={handleHeroMouseLeave}
+        style={{ position: "relative", overflow: "hidden", background: bg, color: txt, textAlign: "center", padding: "120px 24px 100px", borderBottom: `1px solid ${border}` }}>
+        <canvas ref={canvasRef} style={{ position:"absolute", inset:0, width:"100%", height:"100%", pointerEvents:"none" }} />
+        <div className="hero-orb-1" style={{ transform: `translate(${heroMouse.x * 50}px, ${heroMouse.y * 50}px)`, transition: "transform 0.2s ease-out" }} />
+        <div className="hero-orb-2" style={{ transform: `translate(${heroMouse.x * -40}px, ${heroMouse.y * -40}px)`, transition: "transform 0.25s ease-out" }} />
         <div style={{ position: "relative", zIndex: 1 }}>
           <p style={{ fontSize: 16, color: txtMid, marginBottom: 12 }}>{t.role}</p>
           <h1 style={{ fontSize: "clamp(40px,8vw,80px)", fontWeight: 900, letterSpacing: "-2px", marginBottom: 16, color: txt }}>
@@ -391,7 +681,7 @@ export default function Home() {
       </section>
 
       {/* ── SKILLS ── */}
-      <section id="skills" style={{ background: bgAlt, padding: "96px 24px", borderTop: `1px solid ${border}`, borderBottom: `1px solid ${border}` }}>
+      <GridSection id="skills" style={{ background: bgAlt, padding: "96px 24px", borderTop: `1px solid ${border}`, borderBottom: `1px solid ${border}` }}>
         <div style={{ maxWidth: 700, margin: "0 auto" }}>
           <div style={{ marginBottom: 48 }}>
             <p style={{ fontSize: 12, fontWeight: 700, color: accent, textTransform: "uppercase", letterSpacing: "0.15em", marginBottom: 10 }}>
@@ -432,28 +722,94 @@ export default function Home() {
             ))}
           </div>
         </div>
-      </section>
+      </GridSection>
 
       {/* ── SERVICES ── */}
-      <section id="services" style={{ background: bg, padding: "80px 24px" }}>
-        <div style={{ maxWidth: 860, margin: "0 auto" }}>
+      <section id="services" style={{ position:"relative", overflow:"hidden", background:"linear-gradient(160deg,#020917 0%,#06101f 50%,#020917 100%)", padding:"80px 24px" }}>
+        {/* Orbs */}
+        <div style={{ position:"absolute", top:-120, left:-120, width:500, height:500, borderRadius:"50%", background:"radial-gradient(circle,rgba(59,130,246,0.13) 0%,transparent 70%)", animation:"serviceOrb 7s ease-in-out infinite", pointerEvents:"none" }} />
+        <div style={{ position:"absolute", bottom:-100, right:-80, width:420, height:420, borderRadius:"50%", background:"radial-gradient(circle,rgba(29,78,216,0.1) 0%,transparent 70%)", animation:"serviceOrbReverse 9s ease-in-out 1.5s infinite", pointerEvents:"none" }} />
+        {/* Grid */}
+        <div style={{ position:"absolute", inset:0, backgroundImage:"linear-gradient(rgba(59,130,246,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(59,130,246,0.04) 1px,transparent 1px)", backgroundSize:"56px 56px", animation:"gridPan 25s linear infinite", pointerEvents:"none" }} />
+        {/* Particles */}
+        {[{left:"8%",top:"20%",size:3,dur:3.2,delay:0,dx:18},{left:"20%",top:"70%",size:2,dur:4.1,delay:0.6,dx:-14},{left:"65%",top:"30%",size:2,dur:3.0,delay:0.9,dx:16},{left:"80%",top:"60%",size:3,dur:4.8,delay:1.5,dx:-12},{left:"92%",top:"25%",size:2,dur:3.5,delay:0.4,dx:10}].map((p,i)=>(
+          <div key={i} style={{ position:"absolute", width:p.size, height:p.size, borderRadius:"50%", background:"rgba(96,165,250,0.7)", left:p.left, top:p.top, animation:`floatParticle ${p.dur}s ease ${p.delay}s infinite`, ["--dx" as string]:`${p.dx}px`, pointerEvents:"none" }} />
+        ))}
+
+        <div style={{ maxWidth:900, margin:"0 auto", position:"relative", zIndex:1 }}>
           <Label text={t.servicesTitle} />
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, marginTop: 24 }}>
-            {t.services.map((s, i) => (
-              <div key={i} style={{ background: card, borderRadius: 12, padding: 22, border: `1px solid ${border}`, transition: "box-shadow 0.2s, transform 0.2s" }}
-                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = `0 8px 24px rgba(59,130,246,0.15)`; (e.currentTarget as HTMLDivElement).style.transform = "translateY(-3px)"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = "none"; (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)"; }}>
-                <span style={{ fontSize: 28, display: "block", marginBottom: 10 }}>{s.e}</span>
-                <p style={{ fontWeight: 700, color: txt, marginBottom: 5 }}>{s.t}</p>
-                <p style={{ fontSize: 13, color: txtMid, lineHeight: 1.6 }}>{s.d}</p>
+
+          {/* Carousel */}
+          <div style={{ marginTop:40, position:"relative" }}>
+            {/* Main card */}
+            <div style={{ display:"flex", alignItems:"center", gap:24 }}>
+              {/* Prev button */}
+              <button onClick={prevService} style={{ flexShrink:0, width:48, height:48, borderRadius:"50%", background:"rgba(59,130,246,0.1)", border:"1px solid rgba(59,130,246,0.3)", color:"#60a5fa", fontSize:20, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.2s" }}
+                onMouseEnter={e=>{(e.currentTarget as HTMLButtonElement).style.background="rgba(59,130,246,0.25)";}}
+                onMouseLeave={e=>{(e.currentTarget as HTMLButtonElement).style.background="rgba(59,130,246,0.1)";}}>
+                {lang==="he" ? "›" : "‹"}
+              </button>
+
+              {/* Card container */}
+              <div style={{ flex:1, overflow:"hidden" }}>
+                <div key={activeService} style={{
+                  animation: `${slideDir==="next" ? "slideInRight" : "slideInLeft"} 0.42s cubic-bezier(0.22,1,0.36,1) both`,
+                  position:"relative", background:"linear-gradient(135deg,rgba(13,27,46,0.9) 0%,rgba(6,15,30,0.95) 100%)", backdropFilter:"blur(16px)", borderRadius:24, border:"1px solid rgba(59,130,246,0.3)", overflow:"hidden", padding:"50px 48px",
+                  boxShadow:"0 0 60px rgba(59,130,246,0.12), 0 20px 60px rgba(0,0,0,0.5)",
+                }}>
+                  {/* Top shine */}
+                  <div style={{ position:"absolute", top:0, left:0, right:0, height:1, background:"linear-gradient(90deg,transparent,rgba(59,130,246,0.6),transparent)" }} />
+                  {/* Corner glow */}
+                  <div style={{ position:"absolute", top:-60, right:-60, width:200, height:200, borderRadius:"50%", background:"radial-gradient(circle,rgba(59,130,246,0.15) 0%,transparent 70%)", pointerEvents:"none" }} />
+
+                  <div style={{ display:"flex", alignItems:"center", gap:32 }}>
+                    {/* Icon */}
+                    <div style={{ flexShrink:0, width:100, height:100, borderRadius:24, background:"linear-gradient(135deg,rgba(59,130,246,0.2) 0%,rgba(29,78,216,0.15) 100%)", border:"1px solid rgba(59,130,246,0.3)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:48, boxShadow:"0 0 30px rgba(59,130,246,0.2)" }}>
+                      {t.services[activeService].e}
+                    </div>
+                    {/* Text */}
+                    <div style={{ flex:1 }}>
+                      <p style={{ fontSize:26, fontWeight:800, color:txt, marginBottom:10 }}>{t.services[activeService].t}</p>
+                      <p style={{ fontSize:16, color:txtMid, lineHeight:1.7 }}>{t.services[activeService].d}</p>
+                    </div>
+                  </div>
+
+                  {/* Counter */}
+                  <div style={{ marginTop:32, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+                    <span style={{ fontSize:12, color:"rgba(96,165,250,0.5)", fontFamily:"monospace" }}>{String(activeService+1).padStart(2,"0")} / {String(t.services.length).padStart(2,"0")}</span>
+                    {/* Dots */}
+                    <div style={{ display:"flex", gap:8 }}>
+                      {t.services.map((_,i)=>(
+                        <button key={i} onClick={()=>goToService(i, i>activeService?"next":"prev")} style={{ width: i===activeService ? 24 : 8, height:8, borderRadius:99, background: i===activeService ? "#3b82f6" : "rgba(59,130,246,0.2)", border:"none", cursor:"pointer", transition:"all 0.3s ease", padding:0 }} />
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
-            ))}
+
+              {/* Next button */}
+              <button onClick={nextService} style={{ flexShrink:0, width:48, height:48, borderRadius:"50%", background:"rgba(59,130,246,0.1)", border:"1px solid rgba(59,130,246,0.3)", color:"#60a5fa", fontSize:20, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.2s" }}
+                onMouseEnter={e=>{(e.currentTarget as HTMLButtonElement).style.background="rgba(59,130,246,0.25)";}}
+                onMouseLeave={e=>{(e.currentTarget as HTMLButtonElement).style.background="rgba(59,130,246,0.1)";}}>
+                {lang==="he" ? "‹" : "›"}
+              </button>
+            </div>
+
+            {/* Preview cards */}
+            <div style={{ display:"flex", gap:12, marginTop:20, justifyContent:"center" }}>
+              {t.services.map((s,i)=>(
+                <button key={i} onClick={()=>goToService(i, i>activeService?"next":"prev")} style={{ padding:"10px 16px", borderRadius:12, background: i===activeService ? "rgba(59,130,246,0.2)" : "rgba(255,255,255,0.03)", border: i===activeService ? "1px solid rgba(59,130,246,0.45)" : "1px solid rgba(255,255,255,0.06)", cursor:"pointer", transition:"all 0.25s", display:"flex", alignItems:"center", gap:8 }}>
+                  <span style={{ fontSize:16 }}>{s.e}</span>
+                  <span style={{ fontSize:12, color: i===activeService ? "#60a5fa" : txtMid, fontWeight: i===activeService ? 700 : 400 }}>{s.t}</span>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
       {/* ── WORKS ── */}
-      <section id="works" style={{ background: bgAlt, padding: "80px 24px", borderTop: `1px solid ${border}`, borderBottom: `1px solid ${border}` }}>
+      <GridSection id="works" style={{ background: bgAlt, padding: "80px 24px", borderTop: `1px solid ${border}`, borderBottom: `1px solid ${border}` }}>
         <div style={{ maxWidth: 860, margin: "0 auto" }}>
           <Label text={t.worksTitle} />
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, marginTop: 24 }}>
@@ -473,7 +829,7 @@ export default function Home() {
             ))}
           </div>
         </div>
-      </section>
+      </GridSection>
 
       {/* ── TESTIMONIALS ── */}
       <section id="reviews" style={{ background: bg, padding: "80px 24px" }}>
@@ -512,7 +868,7 @@ export default function Home() {
       </section>
 
       {/* ── CONTACT ── */}
-      <section id="contact" style={{ background: bgAlt, padding: "80px 24px", borderTop: `1px solid ${border}` }}>
+      <GridSection id="contact" style={{ background: bgAlt, padding: "80px 24px", borderTop: `1px solid ${border}` }}>
         <div style={{ maxWidth: 860, margin: "0 auto" }}>
           <Label text={t.contactTitle} />
           <p style={{ color: txtMid, marginTop: 8, marginBottom: 32 }}>{t.contactSub}</p>
@@ -574,7 +930,7 @@ export default function Home() {
           </div>
           </div>
         </div>
-      </section>
+      </GridSection>
 
       <footer style={{ background: card, color: txtMid, textAlign: "center", padding: "20px 24px", fontSize: 13, borderTop: `1px solid ${border}` }}>
         © 2025 {lang === "he" ? "איתן ציאדה" : "Eitan Ziada"} · {t.rights}
