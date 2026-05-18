@@ -890,7 +890,7 @@ export default function Home() {
 
       {/* ── STATS ── */}
       <section style={{ background: bgAlt, padding: "36px 24px", borderTop: `1px solid ${border}`, borderBottom: `1px solid ${border}` }}>
-        <div className="grid-3-col" style={{ maxWidth: 700, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, textAlign: "center" }}>
+        <div style={{ maxWidth: 700, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, textAlign: "center" }}>
           {t.stats.map((s, i) => (
             <div key={i}>
               <p style={{ fontSize: 32, fontWeight: 900, color: accent }}>{s.n}</p>
@@ -958,7 +958,7 @@ export default function Home() {
                   fontSize: 14, outline: "none", color: txt }}
                 onFocus={e => (e.currentTarget.style.borderColor = accent)}
                 onBlur={e => (e.currentTarget.style.borderColor = border)} />
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+              <div className="grid-2-col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                 <input required name="phone" type="tel" placeholder={t.phonePh}
                   style={{ padding: "12px 14px", borderRadius: 8, border: `1px solid ${border}`, background: card,
                     fontSize: 14, outline: "none", color: txt }}
